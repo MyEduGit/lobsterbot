@@ -1,7 +1,13 @@
 {
   "name": "lobsterbot",
-  "version": "0.0.1",
-  "description": "Name reservation.",
+  "version": "1.0.0",
+  "description": "Council of Seven \u2014 Telegram Bot Gateway for Mircea's Constellation",
   "main": "index.js",
-  "license": "UNLICENSED"
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  }
 }
