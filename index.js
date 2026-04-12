@@ -1,14 +1,11 @@
 'use strict';
 
-// LobsterBot — Council of Seven Gateway
-// Governed by UrantiOS v1.0 | Truth · Beauty · Goodness
-
 const https = require('https');
-const { COUNCIL, SPIRIT_QUOTES } = require('./council');
+const { COUNCIL } = require('./council');
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 if (!TOKEN) {
-  console.error('ERROR: TELEGRAM_BOT_TOKEN not set. Copy .env.example to .env and fill in your token.');
+  console.error('TELEGRAM_BOT_TOKEN not set');
   process.exit(1);
 }
 
@@ -19,11 +16,20 @@ function apiCall(method, params = {}) {
     const body = JSON.stringify(params);
     const req = https.request(
       `${API_BASE}/${method}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } },
-      res => {
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      (res) => {
         let data = '';
-        res.on('data', chunk => { data += chunk; });
-        res.on('end', () => resolve(JSON.parse(data)));
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try { resolve(JSON.parse(data)); }
+          catch (e) { reject(e); }
+        });
       }
     );
     req.on('error', reject);
@@ -32,93 +38,95 @@ function apiCall(method, params = {}) {
   });
 }
 
-function sendMessage(chatId, text, extra = {}) {
-  return apiCall('sendMessage', { chat_id: chatId, text, parse_mode: 'Markdown', ...extra });
+function send(chatId, text) {
+  return apiCall('sendMessage', { chat_id: chatId, text, parse_mode: 'Markdown' });
 }
 
-// ---- Formatters ----
-
-function fmtCouncilList() {
-  const header = `\u2696\uFE0F *COUNCIL OF SEVEN*\n_Seven Master Spirits \u2014 Governing the Constellation_\n\n`;
+function formatList() {
   const rows = COUNCIL.map(m =>
     `${m.icon} *${m.num}. ${m.name}*\n` +
-    `   ${m.role}\n` +
-    `   _${m.spirit}_`
-  ).join('\n\n');
-  const footer = `\n\n_Governed by UrantiOS v1.0_\n` +
-    `Details: /council\_imac \u00b7 /council\_gabriel \u00b7 /council\_urantios\n` +
-    `/council\_openclaw \u00b7 /council\_nanoclaw \u00b7 /council\_hetzy \u00b7 /council\_urantipedia`;
-  return header + rows + footer;
+    `   _${m.role}_`
+  );
+  return (
+    `\u2696\uFE0F *COUNCIL OF SEVEN*\n` +
+    `_Seven Master Spirits \u2014 Governing the Constellation_\n\n` +
+    rows.join('\n\n') +
+    `\n\nUse /council\\_<id> for details\n` +
+    `IDs: ${COUNCIL.map(m => `\`${m.id}\``).join(', ')}\n\n` +
+    `_Governed by UrantiOS v1.0_`
+  );
 }
 
-function fmtMember(m) {
-  const quote = SPIRIT_QUOTES[m.association] || '';
+const QUOTES = {
+  'Universal Father':      'All authority flows from the source.',
+  'Eternal Son':           'The Word made manifest in action.',
+  'Infinite Spirit':       'The Spirit governs where the eye cannot see.',
+  'Father + Son':          'Where authority meets word, execution begins.',
+  'Father + Spirit':       'Where authority meets spirit, automation is born.',
+  'Son + Spirit':          'Where word meets spirit, intelligence emerges.',
+  'Father + Son + Spirit': 'All knowledge is the synthesis of the Three.',
+};
+
+function formatMember(m) {
   return (
-    `${m.icon} *${m.name}*\n` +
-    `\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n` +
-    `*Seat:* Master Spirit ${m.num} of VII\n` +
+    `${m.icon} *${m.name}* \u2014 Seat ${m.num} of VII\n` +
+    `\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n` +
     `*Spirit:* ${m.spirit}\n` +
     `*Role:* ${m.role}\n` +
     `*Association:* ${m.association}\n` +
     `*Node:* ${m.node}\n\n` +
-    `*Mandate:* ${m.mandate}\n\n` +
-    `_\u201c${quote}\u201d_`
+    `*Mandate:*\n_${m.mandate}_\n\n` +
+    `"${QUOTES[m.association] || 'Governed by Truth, Beauty, and Goodness.'}"`
   );
 }
-
-// ---- Command handlers ----
 
 async function handleUpdate(update) {
   const msg = update.message;
   if (!msg || !msg.text) return;
 
-  const text = msg.text.trim();
   const chatId = msg.chat.id;
+  const text = msg.text.trim();
 
-  if (text === '/start' || text.startsWith('/start ')) {
-    await sendMessage(chatId,
-      `\uD83E\uDD80 *LobsterBot* \u2014 Council of Seven Gateway\n` +
-      `_Governed by UrantiOS v1.0_\n\n` +
-      `*Commands:*\n` +
+  if (text === '/start' || text === '/help') {
+    await send(chatId,
+      `\uD83E\uDD9E *LobsterBot* \u2014 Council of Seven Gateway\n\n` +
+      `Commands:\n` +
       `/council \u2014 List all 7 council members\n` +
-      `/council\_<id> \u2014 Details on a specific member\n\n` +
-      `*Council IDs:* imac \u00b7 gabriel \u00b7 urantios \u00b7 openclaw \u00b7 nanoclaw \u00b7 hetzy \u00b7 urantipedia\n\n` +
-      `_Truth \u00b7 Beauty \u00b7 Goodness_`
+      `/council\\_<id> \u2014 Member details\n\n` +
+      `Example: /council\\_gabriel\n\n` +
+      `_Governed by UrantiOS v1.0_`
     );
     return;
   }
 
-  if (text === '/council' || text === '/council@LobsterBot') {
-    await sendMessage(chatId, fmtCouncilList());
+  if (text === '/council') {
+    await send(chatId, formatList());
     return;
   }
 
-  // /council_<id> or /council_<id>@BotName
-  const memberMatch = text.match(/^\/council_(\w+)/);
-  if (memberMatch) {
-    const query = memberMatch[1].toLowerCase();
-    const member = COUNCIL.find(m =>
-      m.id === query ||
-      m.name.toLowerCase().replace(/[^a-z0-9]/g, '') === query
+  const match = text.match(/^\/council_([\w]+)/i);
+  if (match) {
+    const query = match[1].toLowerCase();
+    const member = COUNCIL.find(
+      m => m.id === query ||
+           m.name.toLowerCase().replace(/\s+/g, '') === query
     );
     if (member) {
-      await sendMessage(chatId, fmtMember(member));
+      await send(chatId, formatMember(member));
     } else {
-      const ids = COUNCIL.map(m => `/council\_${m.id}`).join(' \u00b7 ');
-      await sendMessage(chatId, `Unknown council member \u201c${query}\u201d.\n\nValid IDs: ${ids}`);
+      await send(chatId,
+        `Unknown council member: *${match[1]}*\n\n` +
+        `Valid IDs: ${COUNCIL.map(m => `\`${m.id}\``).join(', ')}`
+      );
     }
     return;
   }
 }
 
-// ---- Long-polling loop ----
-
 let offset = 0;
 
 async function poll() {
-  console.log('\uD83E\uDD80 LobsterBot starting \u2014 Council of Seven active');
-  console.log('UrantiOS v1.0 | Truth \u00b7 Beauty \u00b7 Goodness');
-
+  console.log('\uD83E\uDD9E LobsterBot \u2014 Council of Seven active');
   while (true) {
     try {
       const res = await apiCall('getUpdates', {
@@ -126,7 +134,7 @@ async function poll() {
         timeout: 30,
         allowed_updates: ['message'],
       });
-      if (res.ok && res.result.length > 0) {
+      if (res.ok && res.result && res.result.length > 0) {
         for (const update of res.result) {
           offset = update.update_id + 1;
           handleUpdate(update).catch(err =>

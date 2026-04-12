@@ -1,7 +1,7 @@
 {
   "name": "lobsterbot",
   "version": "1.0.0",
-  "description": "Council of Seven \u2014 Telegram Bot Gateway for Mircea's Constellation",
+  "description": "Council of Seven \u2014 Telegram gateway for Mircea's Constellation",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
