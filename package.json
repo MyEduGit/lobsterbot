@@ -1,7 +1,11 @@
 {
   "name": "lobsterbot",
-  "version": "0.0.1",
-  "description": "Name reservation.",
+  "version": "0.1.0",
+  "description": "Telegram bot powered by InstantlyClaw (OpenClaw AI gateway)",
   "main": "index.js",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "node-telegram-bot-api": "^0.66.0"
+  }
 }
