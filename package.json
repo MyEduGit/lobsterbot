@@ -1,7 +1,14 @@
 {
   "name": "lobsterbot",
-  "version": "0.0.1",
-  "description": "Name reservation.",
+  "version": "0.1.0",
+  "description": "Telegram bot frontend for URANTiOS — triggers book generation via /writebook.",
   "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "license": "UNLICENSED"
 }
