@@ -1,7 +1,15 @@
 {
   "name": "lobsterbot",
-  "version": "0.0.1",
-  "description": "Name reservation.",
+  "version": "1.0.0",
+  "description": "Telegram bot powered by Claude — governed by UrantiOS (Truth, Beauty, Goodness)",
   "main": "index.js",
-  "license": "UNLICENSED"
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.66.0"
+  }
 }

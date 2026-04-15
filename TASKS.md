@@ -4,10 +4,33 @@
 
 ## Active Tasks
 
-| ID      | Priority | Title                                       | Deadline   | Status  |
-|---------|----------|---------------------------------------------|------------|---------|
-| LOB-001 | P2 HIGH  | Implement Telegram bot core in index.js      | 2026-05-01 | Pending |
-| LOB-002 | P3 MED   | Add npm dependencies (telegraf, anthropic)   | 2026-04-20 | Pending |
+| ID      | Priority | Title                                       | Deadline   | Status    |
+|---------|----------|---------------------------------------------|------------|-----------|
+| LOB-001 | P2 HIGH  | Implement Telegram bot core in index.js      | 2026-05-01 | Completed |
+| LOB-002 | P3 MED   | Add npm dependencies (telegraf, anthropic)   | 2026-04-20 | Completed |
+
+## What Was Built
+
+- `index.js` — full Telegram bot with Claude Opus 4.6 integration
+  - Per-user conversation history (up to 20 messages)
+  - Prompt caching on the UrantiOS system prompt (saves tokens on every turn)
+  - Commands: /start, /help, /clear
+  - Graceful error handling (rate limits, auth errors)
+  - Echo mode when ANTHROPIC_API_KEY not set
+- `package.json` — dependencies: `@anthropic-ai/sdk`, `node-telegram-bot-api`, `dotenv`
+
+## Running
+
+```bash
+npm install
+npm start
+```
+
+Requires `.env` with:
+```
+TELEGRAM_BOT_TOKEN=your_token_from_BotFather
+ANTHROPIC_API_KEY=your_anthropic_key
+```
 
 ## Priority Rules
 
