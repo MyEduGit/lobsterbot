@@ -1,0 +1,5 @@
+# NemoClaw Observer — Python dependencies
+requests>=2.31
+psycopg2-binary>=2.9
+redis>=5.0
+python-telegram-bot>=20.0
