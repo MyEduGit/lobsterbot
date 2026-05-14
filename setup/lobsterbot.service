@@ -1,0 +1,38 @@
+[Unit]
+Description=lobsterbot — OpenClaw Telegram bridge
+Documentation=https://github.com/MyEduGit/lobsterbot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Run as root so we can read journalctl, docker, ss -tlnp, systemd-cgtop
+# without extra group plumbing. Change to an unprivileged user if you prefer.
+User=root
+Group=root
+
+WorkingDirectory=/opt/lobsterbot
+EnvironmentFile=/etc/lobsterbot.env
+ExecStart=/usr/bin/node /opt/lobsterbot/index.js
+
+Restart=on-failure
+RestartSec=5s
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Hardening — read-only filesystem view, no new privileges, no ptrace.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+PrivateTmp=true
+ReadWritePaths=/opt/lobsterbot
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lobsterbot
+
+[Install]
+WantedBy=multi-user.target

@@ -1,7 +1,17 @@
 {
   "name": "lobsterbot",
-  "version": "0.0.1",
-  "description": "Name reservation.",
+  "version": "0.1.0",
+  "description": "OpenClaw Telegram bridge — read-only system visibility over Telegram, authorized to a single operator.",
   "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "telegraf": "^4.16.3"
+  },
   "license": "UNLICENSED"
 }
