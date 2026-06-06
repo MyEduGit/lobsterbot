@@ -11,7 +11,7 @@ Usage:
 API keys read from environment:
   OPENAI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY,
   MISTRAL_API_KEY, GROQ_API_KEY, COHERE_API_KEY
-  OLLAMA_BASE_URL  (default: http://204.168.143.98:11434)
+  OLLAMA_BASE_URL  (default: http://localhost:11434)
 
 Governed by UrantiOS — Truth · Beauty · Goodness
 """
@@ -31,7 +31,7 @@ except ImportError:
     sys.exit(1)
 
 # ── Config ──────────────────────────────────────────────────────────────────────────────
-OLLAMA_BASE = os.getenv("OLLAMA_BASE_URL", "http://204.168.143.98:11434")
+OLLAMA_BASE = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 DEFAULT_QUERY = (
     "Should the n8n AI pipeline be granted standing authority to publish "
@@ -488,7 +488,8 @@ def main():
             ),
             "constitutional_ruling": "Spirit VII could not be reached. Ruling deferred to Father Function.",
             "conditions": [
-                "Reconnect Ollama at " + OLLAMA_BASE,
+                "Start Ollama: ollama serve",
+                "Pull model: ollama pull qwen2.5:32b",
                 "Re-convene for full synthesis",
             ],
             "dissenting_spirits": [],
