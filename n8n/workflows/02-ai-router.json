@@ -1,0 +1,86 @@
+{
+  "name": "🔀 AI Smart Router — By Task Type",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "ai-router", "responseMode": "responseNode", "options": {} },
+      "id": "router-webhook",
+      "name": "POST /ai-router",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 440],
+      "webhookId": "nemoclaw-ai-router"
+    },
+    {
+      "parameters": { "jsCode": "const body = $input.first().json.body || $input.first().json;\nreturn [{ json: {\n  query: body.query || body.prompt || 'Hello',\n  task_type: (body.task_type || 'code').toLowerCase().trim(),\n  system_prompt: body.system_prompt || ''\n}}];" },
+      "id": "router-extract",
+      "name": "Extract Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [360, 440]
+    },
+    {
+      "parameters": {
+        "rules": { "values": [
+          { "conditions": { "options": { "caseSensitive": false }, "conditions": [{ "id": "r1", "leftValue": "={{ $json.task_type }}", "rightValue": "fast", "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" } }], "combinator": "and" }, "renameOutput": true, "outputKey": "fast" },
+          { "conditions": { "options": { "caseSensitive": false }, "conditions": [{ "id": "r2", "leftValue": "={{ $json.task_type }}", "rightValue": "creative", "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" } }], "combinator": "and" }, "renameOutput": true, "outputKey": "creative" },
+          { "conditions": { "options": { "caseSensitive": false }, "conditions": [{ "id": "r3", "leftValue": "={{ $json.task_type }}", "rightValue": "research", "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" } }], "combinator": "and" }, "renameOutput": true, "outputKey": "research" },
+          { "conditions": { "options": { "caseSensitive": false }, "conditions": [{ "id": "r4", "leftValue": "={{ $json.task_type }}", "rightValue": "local", "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" } }], "combinator": "and" }, "renameOutput": true, "outputKey": "local" },
+          { "conditions": { "options": { "caseSensitive": false }, "conditions": [{ "id": "r5", "leftValue": "={{ $json.task_type }}", "rightValue": "analysis", "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" } }], "combinator": "and" }, "renameOutput": true, "outputKey": "analysis" },
+          { "conditions": { "options": { "caseSensitive": false }, "conditions": [{ "id": "r6", "leftValue": "={{ $json.task_type }}", "rightValue": "search", "operator": { "type": "string", "operation": "equals", "name": "filter.operator.equals" } }], "combinator": "and" }, "renameOutput": true, "outputKey": "search" }
+        ] },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "id": "router-switch",
+      "name": "Route by Task",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [560, 440]
+    },
+    { "parameters": { "promptType": "define", "text": "={{ $('Extract Request').first().json.query }}" }, "id": "chain-groq", "name": "Chain — Groq (fast)", "type": "@n8n/n8n-nodes-langchain.chainLlm", "typeVersion": 1.4, "position": [800, 80] },
+    { "parameters": { "model": "llama-3.3-70b-versatile", "options": {} }, "id": "model-groq", "name": "Groq Llama (fast)", "type": "@n8n/n8n-nodes-langchain.lmChatGroq", "typeVersion": 1, "position": [1020, 80], "credentials": { "groqApi": { "id": "groq-01", "name": "Groq" } } },
+    { "parameters": { "promptType": "define", "text": "={{ $('Extract Request').first().json.query }}" }, "id": "chain-claude", "name": "Chain — Claude (creative)", "type": "@n8n/n8n-nodes-langchain.chainLlm", "typeVersion": 1.4, "position": [800, 240] },
+    { "parameters": { "model": "claude-sonnet-4-6", "options": { "maxTokens": 2000 } }, "id": "model-claude", "name": "Claude Sonnet (creative)", "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic", "typeVersion": 1.3, "position": [1020, 240], "credentials": { "anthropicApi": { "id": "anthropic-01", "name": "Anthropic API" } } },
+    { "parameters": { "promptType": "define", "text": "={{ $('Extract Request').first().json.query }}" }, "id": "chain-gemini", "name": "Chain — Gemini (research)", "type": "@n8n/n8n-nodes-langchain.chainLlm", "typeVersion": 1.4, "position": [800, 400] },
+    { "parameters": { "modelName": "models/gemini-2.0-flash", "options": {} }, "id": "model-gemini", "name": "Gemini Flash (research)", "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini", "typeVersion": 1, "position": [1020, 400], "credentials": { "googlePalmApi": { "id": "google-01", "name": "Google AI" } } },
+    { "parameters": { "promptType": "define", "text": "={{ $('Extract Request').first().json.query }}" }, "id": "chain-ollama", "name": "Chain — Ollama (local)", "type": "@n8n/n8n-nodes-langchain.chainLlm", "typeVersion": 1.4, "position": [800, 560] },
+    { "parameters": { "model": "qwen2.5:32b", "baseUrl": "http://204.168.143.98:11434", "options": {} }, "id": "model-ollama", "name": "Ollama Qwen (local)", "type": "@n8n/n8n-nodes-langchain.lmChatOllama", "typeVersion": 1, "position": [1020, 560] },
+    { "parameters": { "promptType": "define", "text": "={{ $('Extract Request').first().json.query }}" }, "id": "chain-mistral", "name": "Chain — Mistral (analysis)", "type": "@n8n/n8n-nodes-langchain.chainLlm", "typeVersion": 1.4, "position": [800, 720] },
+    { "parameters": { "model": "mistral-large-latest", "options": {} }, "id": "model-mistral", "name": "Mistral Large (analysis)", "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud", "typeVersion": 1, "position": [1020, 720], "credentials": { "mistralCloudApi": { "id": "mistral-01", "name": "Mistral AI" } } },
+    { "parameters": { "promptType": "define", "text": "={{ $('Extract Request').first().json.query }}" }, "id": "chain-cohere", "name": "Chain — Cohere (search)", "type": "@n8n/n8n-nodes-langchain.chainLlm", "typeVersion": 1.4, "position": [800, 880] },
+    { "parameters": { "model": "command-r-plus-08-2024", "options": {} }, "id": "model-cohere", "name": "Cohere Command-R+ (search)", "type": "@n8n/n8n-nodes-langchain.lmCohere", "typeVersion": 1, "position": [1020, 880], "credentials": { "cohereApi": { "id": "cohere-01", "name": "Cohere" } } },
+    { "parameters": { "promptType": "define", "text": "={{ $('Extract Request').first().json.query }}" }, "id": "chain-openai-default", "name": "Chain — OpenAI (default/code)", "type": "@n8n/n8n-nodes-langchain.chainLlm", "typeVersion": 1.4, "position": [800, 1040] },
+    { "parameters": { "model": "gpt-4o", "options": { "maxTokens": 2000 } }, "id": "model-openai-default", "name": "GPT-4o (default/code)", "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi", "typeVersion": 1.2, "position": [1020, 1040], "credentials": { "openAiApi": { "id": "openai-01", "name": "OpenAI API" } } },
+    { "parameters": { "respondWith": "json", "responseBody": "={{ JSON.stringify({ response: $json.text || $json.output, provider: $json.provider || 'AI', query: $('Extract Request').first().json.query, task_type: $('Extract Request').first().json.task_type, timestamp: new Date().toISOString() }) }}" }, "id": "router-respond", "name": "Respond to Webhook", "type": "n8n-nodes-base.respondToWebhook", "typeVersion": 1.1, "position": [1260, 560] }
+  ],
+  "connections": {
+    "POST /ai-router": { "main": [[{ "node": "Extract Request", "type": "main", "index": 0 }]] },
+    "Extract Request": { "main": [[{ "node": "Route by Task", "type": "main", "index": 0 }]] },
+    "Route by Task": { "main": [
+      [{ "node": "Chain — Groq (fast)", "type": "main", "index": 0 }],
+      [{ "node": "Chain — Claude (creative)", "type": "main", "index": 0 }],
+      [{ "node": "Chain — Gemini (research)", "type": "main", "index": 0 }],
+      [{ "node": "Chain — Ollama (local)", "type": "main", "index": 0 }],
+      [{ "node": "Chain — Mistral (analysis)", "type": "main", "index": 0 }],
+      [{ "node": "Chain — Cohere (search)", "type": "main", "index": 0 }],
+      [{ "node": "Chain — OpenAI (default/code)", "type": "main", "index": 0 }]
+    ] },
+    "Groq Llama (fast)": { "ai_languageModel": [[{ "node": "Chain — Groq (fast)", "type": "ai_languageModel", "index": 0 }]] },
+    "Claude Sonnet (creative)": { "ai_languageModel": [[{ "node": "Chain — Claude (creative)", "type": "ai_languageModel", "index": 0 }]] },
+    "Gemini Flash (research)": { "ai_languageModel": [[{ "node": "Chain — Gemini (research)", "type": "ai_languageModel", "index": 0 }]] },
+    "Ollama Qwen (local)": { "ai_languageModel": [[{ "node": "Chain — Ollama (local)", "type": "ai_languageModel", "index": 0 }]] },
+    "Mistral Large (analysis)": { "ai_languageModel": [[{ "node": "Chain — Mistral (analysis)", "type": "ai_languageModel", "index": 0 }]] },
+    "Cohere Command-R+ (search)": { "ai_languageModel": [[{ "node": "Chain — Cohere (search)", "type": "ai_languageModel", "index": 0 }]] },
+    "GPT-4o (default/code)": { "ai_languageModel": [[{ "node": "Chain — OpenAI (default/code)", "type": "ai_languageModel", "index": 0 }]] },
+    "Chain — Groq (fast)": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Chain — Claude (creative)": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Chain — Gemini (research)": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Chain — Ollama (local)": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Chain — Mistral (analysis)": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Chain — Cohere (search)": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
+    "Chain — OpenAI (default/code)": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "id": "ai-router-nemoclaw",
+  "meta": { "templateCredsSetupCompleted": false }
+}
